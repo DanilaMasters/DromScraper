@@ -10,9 +10,9 @@ async def index():
     return get_data()
 
 @app.post('/run-scraper')
-def run_scraper(pages_count: int):
+async def run_scraper(search_text: str,pages_count: int):
     try:
-        run(pages_count)
+        await run(pages_count, search_text)
     except WebDriverException:
         return 'Something wrog with the WebDriver'
     return "Scraped succesfully!"
