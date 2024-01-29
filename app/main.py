@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from app.dependencies import get_data
-from scraper.scraper import run
+from scraper.main import main
 from selenium.common.exceptions import WebDriverException
 
 app = FastAPI(title='Drom')
@@ -9,10 +9,14 @@ app = FastAPI(title='Drom')
 async def index():
     return get_data()
 
+@app.post('/add-tracked-product')
+async def add_tracked_product(name: str):
+    
+
 @app.post('/run-scraper')
-async def run_scraper(search_text: str,pages_count: int = 1):
+async def run_scraper(url, search_text: str):
     try:
-        await run(pages_count, search_text)
+        await main(url, search_text)
     except WebDriverException:
         return 'Something wrog with the WebDriver'
     return "Scraped succesfully!"
