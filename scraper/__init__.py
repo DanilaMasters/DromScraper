@@ -1,10 +1,7 @@
-from scraper import run
+from scraper.main import main
+from scraper.main import DROM
 import asyncio
 
-async def main():
-    await run(1, 'X5')
-
 if __name__ == "__main__":
-    import tracemalloc
-    tracemalloc.start()
-    asyncio.run(main())
+    # test script
+    asyncio.run(main(DROM, "toyota"))
