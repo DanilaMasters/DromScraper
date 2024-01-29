@@ -4,23 +4,45 @@ from web_app.app.products.dao import ProductDAO
 
 router = APIRouter(prefix='/products', tags=['Producsts'])
 
+@router.get('/all-results')
+async def get_results():
+    results = await ProductDAO.find_all()
+    product_results = []
+    for result in results:
+        product_results.append({
+            'name': result.name,
+            'img': result.img,
+            'url': result.url,
+            'price': result.price
+        })
+
+    return product_results
+
 @router.get('/show-results')
 async def get_product_results(search_text: str):
-    results = ProductDAO.find_all(search_text=search_text)
+    results = await ProductDAO.find_all(search_text=search_text.lower())
     return results
 
 @router.post('/results')
 async def submit_results(request: Request):
     data = await request.json()
     results = data.get('data')
-    response = []
+    search_text = data.get("search_text").lower()
+    source = data.get("source")
+
     for result in results:
-        info = result.get('info')
-        href = result.get('href')
-        item = await ProductDAO.find_one_or_none(href=href)
-        if not item:
-            await ProductDAO.add(info=info, href=href)
-        else:
-            response.append({'message': f'Item {info} with href: {href} already exists'})
-    print(response if response is not None else {'message': 'Added succesfully!'})
+        name = result.get('name')
+        img = result.get('img')
+        url = result.get('url')
+        price = result.get('price')
+        await ProductDAO.add(
+            name=name,
+            img=img,
+            url=url,
+            price=int(price),
+            search_text=search_text,
+            source=source
+        )
+    response = {'message': 'Received data successfully'}
+    return response
     

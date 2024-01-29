@@ -11,7 +11,8 @@ URLS = {
     DROM: {
         "search_field_query": 'input[placeholder="Марка"]',
         "search_button_query": 'input[value="Go"]',
-        "product_selector": "a.css-1oas0dk.e1huvdhj1"
+        "product_selector": "a.css-1oas0dk.e1huvdhj1",
+        "next_page_url": "/page2"
     }
 }
 
@@ -37,23 +38,31 @@ async def search(metadata, page, search_text):
     return page
 
 
-async def get_products(page, search_text, selector, get_product):
+async def get_products(page, search_text, divs_selector, next_page_url, get_product, page_count):
     print("Retreiving products.")
-    product_divs = await page.query_selector_all(selector)
     valid_products = []
     words = search_text.split(" ")
 
     async with asyncio.TaskGroup() as tg:
-        for div in product_divs:
-            async def task(div):
-                product = await get_product(div)
+        product_divs = await page.query_selector_all(divs_selector)
+        for count in range(page_count):
+            for div in product_divs:
+                async def task(div):
+                    product = await get_product(div)
 
-                for word in words:
-                    if not product["info"] or word.lower() not in product["info"].lower():
-                        break
-                else:
-                    valid_products.append(product)
-            tg.create_task(task(div))
+                    if not product["price"] or not product["url"]:
+                        return
+
+                    for word in words:
+                        if not product["name"] or word.lower() not in product["name"].lower():
+                            break
+                    else:
+                        valid_products.append(product)
+                tg.create_task(task(div))
+            if count > 1:
+                print(f'{page.url}{next_page_url}')
+                await page.goto(f'{page.url}{next_page_url}')
+                await page.wait_for_load_state()
 
     return valid_products
 
@@ -77,7 +86,7 @@ def post_results(results, endpoint, search_text, source):
     print("Status code:", response.status_code)
 
 
-async def main(url, search_text, response_route):
+async def main(url, search_text, response_route, page_count):
     metadata = URLS.get(url)
     if not metadata:
         print("Invalid URL.")
@@ -99,7 +108,7 @@ async def main(url, search_text, response_route):
         else:
             raise Exception('Invalid URL')
 
-        results = await get_products(search_page, search_text, metadata["product_selector"], func)
+        results = await get_products(search_page, search_text, metadata["product_selector"], metadata["next_page_url"], func, page_count)
         print("Saving results.")
         post_results(results, response_route, search_text, url)
 

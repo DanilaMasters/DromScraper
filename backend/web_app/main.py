@@ -8,18 +8,10 @@ import subprocess
 
 app.include_router(product_router)
 
-@app.get('/')
-async def index():
-    return get_data()
-
-@app.post('/add-tracked-product')
-async def add_tracked_product(name: str):
-    pass
-
 @app.post('/run-scraper')
-async def run_scraper(url: str, search_text: str):
+async def run_scraper(url: str, search_text: str, page_count: int = 10):
     try:
-        command = f"python ./run_scraper.py {url} \"{search_text}\" /products/results"
+        command = f"python ./run_scraper.py {url} \"{search_text}\" /products/results {page_count}"
         subprocess.Popen(command, shell=True)
     except WebDriverException:
         return 'Something wrog with the WebDriver'
