@@ -11,7 +11,7 @@ async def index():
 
 @app.post('/add-tracked-product')
 async def add_tracked_product(name: str):
-    
+    pass
 
 @app.post('/run-scraper')
 async def run_scraper(url, search_text: str):
