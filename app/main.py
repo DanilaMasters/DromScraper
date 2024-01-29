@@ -1,9 +1,11 @@
-from fastapi import FastAPI
+from app.app import app
 from app.dependencies import get_data
 from scraper.main import main
 from selenium.common.exceptions import WebDriverException
+from app.app.products.router import router as product_router
 
-app = FastAPI(title='Drom')
+
+app.include_router(product_router)
 
 @app.get('/')
 async def index():
