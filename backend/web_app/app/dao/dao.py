@@ -1,5 +1,6 @@
+from asyncpg import UniqueViolationError
 from sqlalchemy import select, insert
-from app.database import async_session_maker
+from web_app.database import async_session_maker
 
 class BaseDAO:
     model = None
@@ -17,3 +18,10 @@ class BaseDAO:
             query = insert(cls.model).values(**data)
             await session.execute(query)
             await session.commit()
+
+    @classmethod
+    async def find_one_or_none(cls, **kwargs):
+        async with async_session_maker() as session:
+            query = select(cls.model).filter_by(**kwargs)
+            result = await session.execute(query)
+            return result.scalar_one_or_none()

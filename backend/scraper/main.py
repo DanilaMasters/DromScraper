@@ -2,10 +2,10 @@ import asyncio
 from playwright.async_api import async_playwright
 import json
 import os
-from drom import get_product as get_drom_product
+from .drom import get_product as get_drom_product
 from requests import post
 
-DROM = "https://auto.drom.ru"
+DROM = "https://auto.drom.ru/toyota/all"
 
 URLS = {
     DROM: {
@@ -65,19 +65,19 @@ def save_results(results):
         json.dump(data, f, ensure_ascii=False, indent=4)
 
 
-# def post_results(results, endpoint, search_text, source):
-#     headers = {
-#         "Content-Type": "application/json"
-#     }
-#     data = {"data": results, "search_text": search_text, "source": source}
+def post_results(results, endpoint, search_text, source):
+    headers = {
+        "Content-Type": "application/json"
+    }
+    data = {"data": results, "search_text": search_text, "source": source}
 
-#     print("Sending request to", endpoint)
-#     response = post("http://localhost:5000" + endpoint,
-#                     headers=headers, json=data)
-#     print("Status code:", response.status_code)
+    print("Sending request to", endpoint)
+    response = post("http://localhost:8000" + endpoint,
+                    headers=headers, json=data)
+    print("Status code:", response.status_code)
 
 
-async def main(url, search_text):
+async def main(url, search_text, response_route):
     metadata = URLS.get(url)
     if not metadata:
         print("Invalid URL.")
@@ -90,7 +90,8 @@ async def main(url, search_text):
         print("Connected.")
         await page.goto(url, timeout=120000)
         print("Loaded initial page.")
-        search_page = await search(metadata, page, search_text)
+        # search_page = await search(metadata, page, search_text)
+        search_page = page
 
         def func(x): return None
         if url == DROM:
@@ -100,7 +101,6 @@ async def main(url, search_text):
 
         results = await get_products(search_page, search_text, metadata["product_selector"], func)
         print("Saving results.")
-        save_results(results)
-        # post_results(results, response_route, search_text, url)
+        post_results(results, response_route, search_text, url)
 
         await browser.close()

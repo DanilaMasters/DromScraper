@@ -8,8 +8,8 @@ from alembic import context
 
 sys.path.insert(0, dirname(dirname(dirname(dirname(abspath(__file__))))))
 
-from app.database import DATABASE_URL, Base
-from app.app.products.models import ProductsResult, TrackedProducts
+from web_app.database import DATABASE_URL, Base
+from web_app.app.products.models import ProductsResult, TrackedProducts
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
